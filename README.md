@@ -102,6 +102,7 @@ approved. Those are different incidents and deserve different urgency.
 | `init` | scaffold inventory + baseline dir |
 | `pull` | collect configs, overwrite baseline (accept current state) |
 | `check` | collect, compare, report drift |
+| `serve` | same results as a live HTML dashboard |
 
 | Flag | Default | Purpose |
 |---|---|---|
@@ -109,6 +110,24 @@ approved. Those are different incidents and deserve different urgency.
 | `--baseline <dir>` | `baseline` | intended-state configs |
 | `--mock` | off | synthetic devices, no gear needed |
 | `--drift <n>` | `0` | inject synthetic changes (demo/CI testing) |
+| `--port <n>` | `8787` | dashboard port |
+| `--host <addr>` | `127.0.0.1` | dashboard bind address |
+
+## Dashboard
+
+```bash
+node src/cli.js serve --inventory examples/inventory.json \
+    --baseline examples/baseline --mock --drift 1
+```
+
+Green when everything matches, red when it doesn't, with the exact lines that
+changed. Auto-refreshes every 30s.
+
+**HTTP status is meaningful:** `200` clean, `409` drift, `500` error — so you can
+monitor it with curl or wire it into an alerting check without scraping HTML.
+
+It binds loopback by default on purpose. A page listing your network devices is
+not something to expose on `0.0.0.0` by accident.
 
 ## Test
 

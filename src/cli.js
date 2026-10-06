@@ -17,6 +17,7 @@ import path from "node:path";
 import process from "node:process";
 import { compare } from "./diff.js";
 import { collect } from "./collect.js";
+import { serve } from "./serve.js";
 
 const RESET = "\x1b[0m";
 const RED = "\x1b[31m";
@@ -175,6 +176,22 @@ async function cmdCheck(args) {
   process.exit(0);
 }
 
+/* --------------------------------- serve ---------------------------------- */
+
+async function cmdServe(args) {
+  const { url } = await serve({
+    port: Number(args.flags.port ?? 8787),
+    host: args.flags.host || "127.0.0.1",
+    inventory: args.flags.inventory || "driftwatch.json",
+    baselineDir: args.flags.baseline || "baseline",
+    mock: Boolean(args.flags.mock),
+    driftLevel: Number(args.flags.drift ?? 0),
+  });
+  console.log(`${BOLD}driftwatch${RESET} serving on ${GREEN}${url}${RESET}`);
+  console.log(`${DIM}binds loopback by default — pass --host 0.0.0.0 deliberately${RESET}`);
+  console.log(`${DIM}ctrl-c to stop${RESET}`);
+}
+
 /* ---------------------------------- help ---------------------------------- */
 
 function cmdHelp() {
@@ -187,18 +204,23 @@ ${BOLD}Commands${RESET}
   init      scaffold an inventory and baseline directory
   pull      collect configs and overwrite the baseline (accept current state)
   check     collect, compare against baseline, report drift
+  serve     serve the same results as a live HTML dashboard
 
 ${BOLD}Flags${RESET}
   --inventory <file>   default: driftwatch.json
   --baseline <dir>     default: baseline
   --mock               use synthetic devices (no network gear needed)
   --drift <n>          inject n synthetic live changes (demo/testing)
+  --port <n>           default: 8787 (serve)
+  --host <addr>        default: 127.0.0.1 (serve)
 
 ${BOLD}Examples${RESET}
   driftwatch init
   driftwatch pull --mock
   driftwatch check --mock
   driftwatch check --mock --drift 1
+  driftwatch serve --inventory examples/inventory.json \\
+      --baseline examples/baseline --mock --drift 1
 
 ${BOLD}Exit codes${RESET}
   0 clean · 1 drift detected · 2 collection error
@@ -218,6 +240,8 @@ async function main() {
         return await cmdPull(args);
       case "check":
         return await cmdCheck(args);
+      case "serve":
+        return await cmdServe(args);
       case "help":
       case "--help":
       case "-h":
