@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>driftwatch — know what changed on your network before it breaks</title>
+<meta name="description" content="driftwatch compares your network devices against the config you committed to git, and tells you exactly what changed.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <span class="brand">driftwatch</span>
+    <nav>
+      <a href="#problem">Problem</a>
+      <a href="#demo">Live demo</a>
+      <a href="#how">How it works</a>
+      <a href="#safety">Safety</a>
+      <a class="btn-ghost" href="https://github.com/cnpt9db5gp-cpu/driftwatch">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Stop finding out<br>when it&nbsp;breaks.</h1>
+    <p class="lede">
+      Your network has a configuration. You also have a belief about what that
+      configuration should be. Those two quietly stop matching — and nobody
+      notices until something goes down.
+    </p>
+    <p class="lede">
+      <strong>driftwatch</strong> compares your devices against the config you
+      committed to git, and tells you exactly which lines changed.
+    </p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/cnpt9db5gp-cpu/driftwatch">Get it on GitHub</a>
+      <a class="btn-ghost" href="#demo">Try the live demo</a>
+    </div>
+    <p class="micro">Zero dependencies &middot; Node 20+ &middot; read-only by design</p>
+  </div>
+</section>
+
+<section id="problem" class="band">
+  <div class="wrap">
+    <h2 class="h2">The moment it actually bites</h2>
+    <div class="story">
+      <div class="story-step">
+        <span class="num">1</span>
+        <h3>You commit the config</h3>
+        <p>Everything looks right. It's in git, reviewed, everyone's aligned. You go home.</p>
+      </div>
+      <div class="story-step">
+        <span class="num">2</span>
+        <h3>Someone changes a device</h3>
+        <p>A colleague debugs at 11pm. A script runs. An emergency fix gets made during an incident. Nobody writes it down.</p>
+      </div>
+      <div class="story-step">
+        <span class="num">3</span>
+        <h3>You find out the hard way</h3>
+        <p>Three weeks later a rebuild wipes it, or a failover moves to the box that was quietly changed. Now it's a real incident.</p>
+      </div>
+    </div>
+    <p class="pull">
+      The gap between <em>what you believe</em> and <em>what is running</em> is
+      invisible. That's the entire problem.
+    </p>
+  </div>
+</section>
+
+<section id="demo" class="band alt">
+  <div class="wrap">
+    <h2 class="h2">See it work</h2>
+    <p class="sub">This runs in your browser. No setup, nothing installed.</p>
+
+    <div class="demo">
+      <div class="demo-bar">
+        <div class="demo-title">
+          <span class="dot" id="dot"></span>
+          <strong>R1</strong>
+          <span class="demo-state" id="state">CLEAN</span>
+        </div>
+        <div class="demo-toggles">
+          <button id="btn-clean" class="tog active">Everything normal</button>
+          <button id="btn-drift" class="tog">Someone changed it</button>
+        </div>
+      </div>
+
+      <p class="demo-expl" id="explain">
+        R1 matches the config in git. Nothing to report.
+      </p>
+
+      <div class="demo-diff" id="diff"></div>
+
+      <div class="demo-foot">
+        <span id="summary">0 changes</span>
+        <span class="legend">
+          <i class="sw add"></i> unexpected &mdash; on the device, not in git
+          <i class="sw del"></i> missing &mdash; in git, gone from the device
+        </span>
+      </div>
+    </div>
+
+    <div class="why">
+      <div>
+        <h3>Unexpected</h3>
+        <p>Someone added something. A community string, a debug route, a permit
+        rule nobody approved. You never asked for it.</p>
+      </div>
+      <div>
+        <h3>Missing</h3>
+        <p>Something you deliberately configured is gone. It was removed, or a
+        change got rolled back by accident.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="band">
+  <div class="wrap">
+    <h2 class="h2">How it works</h2>
+    <ol class="steps">
+      <li>
+        <h3>Capture what you intend</h3>
+        <p>One command reads every device and saves the config as plain text
+        files. You commit them to git, so future changes go through review.</p>
+        <pre><code>node src/cli.js pull
+git add baseline/ &amp;&amp; git commit -m "intended config"</code></pre>
+      </li>
+      <li>
+        <h3>Check, any time</h3>
+        <p>Run it in the morning, on a schedule, or in CI. It exits
+        <code>1</code> if anything drifted, <code>0</code> if clean — so anything
+        that understands exit codes can alert on it.</p>
+        <pre><code>node src/cli.js check</code></pre>
+      </li>
+      <li>
+        <h3>Look at it, if you want to</h3>
+        <p>A live dashboard: green when clean, red when not, with the exact
+        lines that changed.</p>
+        <pre><code>node src/cli.js serve</code></pre>
+      </li>
+    </ol>
+
+    <div class="note">
+      <strong>Why not Ansible, Salt or Batfish?</strong>
+      Those are heavier than most people need, and all of them assume you
+      already have an inventory and a source of truth. driftwatch is one binary,
+      one JSON file, and a directory of text files in git. If you have three
+      devices and a laptop, that is the entire setup.
+    </div>
+  </div>
+</section>
+
+<section id="safety" class="band alt">
+  <div class="wrap">
+    <h2 class="h2">What it will not do</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>It never changes a device</h3>
+        <p>driftwatch is read-only. It cannot push, apply or modify anything. It
+        looks and reports, nothing else. A tool that watches your network should
+        not also be able to alter it.</p>
+      </div>
+      <div class="card">
+        <h3>It does not touch your laptop</h3>
+        <p>On this site and in the default demo, the devices are fictional and
+        no SSH connection is opened. Point it at real gear when you actually
+        want to.</p>
+      </div>
+      <div class="card">
+        <h3>It stays on your machine</h3>
+        <p>No accounts, no telemetry, no dashboard service. The dashboard binds
+        <code>127.0.0.1</code> by default; exposing it is a deliberate flag.</p>
+      </div>
+    </div>
+
+    <div class="noise">
+      <h3>One more thing it handles for you</h3>
+      <p>
+        Real devices emit noise on every poll &mdash; timestamps, uptime counters,
+        byte counts, command echoes. Diff that raw and you learn to ignore the
+        red lines, then stop reading the output. driftwatch strips the noise
+        first, so the report only ever shows real configuration changes.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Know on Monday what happened on Saturday.</h2>
+    <div class="cta">
+      <a class="btn" href="https://github.com/cnpt9db5gp-cpu/driftwatch">Get driftwatch</a>
+      <a class="btn-ghost" href="https://github.com/cnpt9db5gp-cpu/driftwatch#readme">Read the docs</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>driftwatch &mdash; MIT licensed</span>
+    <span>Early stage. Built in one night, not yet run against real hardware.</span>
+  </div>
+</footer>
+
+<script src="assets/demo.js"></script>
+</body>
+</html>
