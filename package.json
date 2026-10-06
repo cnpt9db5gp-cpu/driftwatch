@@ -1,0 +1,18 @@
+{
+  "name": "driftwatch",
+  "version": "0.1.0",
+  "description": "Catch network config drift before it bites you at 2am",
+  "type": "module",
+  "bin": {
+    "driftwatch": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "demo": "node src/cli.js check --inventory examples/inventory.json --baseline examples/baseline --mock",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

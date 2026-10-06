@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.DS_Store
+driftwatch.json
+baseline/*.cfg
+!examples/baseline/*.cfg
+.env
